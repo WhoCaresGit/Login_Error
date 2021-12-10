@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>Chatanwendung</title>
+</head>
+
+
+<body>
+    <h2>Login at Chatty</h2>
+
+    </br>
+
+    <button id="login_button" onclick=load_git_login()>Login</button>
+
+    </br>
+    </br>
+
+
+    <div>Login-Token</div>
+    <div id="device_code">Test</div>
+
+    </br>
+    </br>
+
+    <button id="login_button" onclick=start_load_rooms()>Start Fetch</button>
+    <button id="login_button" onclick=stop_load_rooms()>Stop Fetch</button>
+
+</body>
+<script>
+
+    const output = document.getElementById("device_code");
+    var stop_fetch = false;
+
+
+    function start_load_rooms() {
+        stop_fetch = false;
+        load_rooms();
+
+
+    }
+    function stop_load_rooms() {
+
+        stop_fetch = true;
+
+    }
+
+
+    function login() {
+
+        try {
+            fetch("https://chatty.1337.cx/me/device_code", {
+                credentials: "include",
+                mode: "cors",
+            })
+                .then(response => response.json())
+                .then((json) => {
+
+                    console.log("user_code", json.user_code)
+
+                    if (json.hasOwnProperty("user_code")) {
+                        sessionStorage["my_code"] = json.user_code;
+                        console.log("Session_code", sessionStorage["my_code"])
+                        document.getElementById("device_code").innerHTML = sessionStorage["my_code"];
+                    }
+                })
+        }
+
+        finally {
+            document.getElementById("device_code").innerHTML = sessionStorage["my_code"];
+        }
+    }
+
+    async function load_rooms() {
+        while (stop_fetch == false) {
+            console.log("Loading Now...")
+            try {
+
+                let request = await fetch("https://chatty.1337.cx/rooms", {
+                    credentials: "include",
+                    //mode: "cors"
+                })
+                if (request.status >= 200 && request.status < 300) {
+                    console.log("Räume:", await request.text());
+                }
+                else {
+                    console.warn(await request.text());
+                }
+            }
+            catch (error) {
+
+                console.error(error);
+
+            }
+            await new Promise(resolve => {
+                setTimeout(() => {
+                    resolve()
+                }, 2000)
+            }
+            )
+        }
+    }
+
+
+
+    function load_git_login() {
+        new_window = window.open("https://github.com/login/device", null, "height=600,width=1000,status=yes,toolbar=no,menubar=no,location=center");
+        new_window.focus;
+    }
+
+
+    login()
+
+</script>
+
+</html>
